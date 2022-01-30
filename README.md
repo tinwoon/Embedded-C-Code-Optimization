@@ -587,3 +587,87 @@
 - 로딩
 
   - 실행 가능한 오브젝트 파일이나 공유 오브젝트 파일은 정적 프로그램이다. 정적 프로그램이 실행되려면 시스템이 이 파일들을 이용해서 동적으로 표현된 프로그램이나 프로세스 이미지를 만들어야 한다.
+
+
+
+
+
+#### 포인터는 큰 데이터를 이동시키는 효과적인 방법이다.
+
+```c
+//값에 의한 호출
+#include <stdio.h>
+
+void f1(struct Test x);
+
+struct Test{
+    int a;
+    float b;
+    char c;
+};
+
+void main(){
+    struct Test t1;
+    t1.a = 3;
+    t1.b = 5.5;
+    t1.c = 'x';
+    f1(t1);
+}
+
+void f1(struct Test x){
+    printf("%d, %f, %c\n", x.a, x.b, x.c);
+}
+```
+
+```c
+//참조에 의한 호출
+#include <stdio.h>
+void f1(struct Test *x);
+
+struct Test{
+    int a;
+    float b;
+    char c;
+};
+
+void main(){
+    struct Test t1, *p;
+    p = &t1;
+    t1.a = 3;
+    t1.b = 5.5;
+    t1.c = 'x';
+    f1(p);
+}
+
+void f1(struct Test *x){
+    printf("%d, %f, %c\n", x->a, x->b, x->c);
+}
+```
+
+- 물론 위와 같이 직접 포인터를 통해 접근하는 코드를 통해 데이터를 변경시킬 수 있는 위험성도 제공된다.
+- 하지만 const 키워드 하나를 통해 값의 접근을 제한하는 방법을 주로 사용한다. 
+- 구조체 자체는 그대로 선언하고 포인터 할당시에 const를 할당하여 캐스팅해주는 방법이다.
+
+```c
+#include <stdio.h>
+
+void f1(const struct Test *x);
+
+struct Test{
+    int a;
+    float b;
+    char c;
+};
+
+void main(){
+    struct Test t1, *p;
+  	p = &t1;
+    
+    f1(p);
+}
+
+void f1(const struct Test *x){
+    printf("%d, %f, %c\n", x->a, x->b, x->c);
+}
+```
+
