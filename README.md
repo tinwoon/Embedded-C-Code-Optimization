@@ -671,3 +671,128 @@ void f1(const struct Test *x){
 }
 ```
 
+
+
+#### 포인터는 배열, 문자열, 함수 등의 데이터 자체가 움직일 수 없으므로 이를 대신해 데이터의 포인터를 이동시키는 것이다.
+
+```c
+#include <stdio.h>
+
+struct sample{          //구조체 sample 정의
+    char a[10];
+    int b;
+    float c;
+}f[3] = {               //구조체 배열선언 및 초기화
+    {"test1", 10,10.5},
+    {"test2", 20, 20.5},
+    {"test3", 30, 30.5}
+};
+
+int add(int,int);
+
+// 인자 테스트에 사용할 함수들의 프로토타입
+void arg_arr_test(int*);
+void arg_str_test(char*);
+void arg_stru_test(struct sample*);
+void arg_func_test(int(*) (int, int));
+
+void main(void){
+    int d[] ={1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    char *e = "hello";
+    
+    arg_arr_test(d);
+    arg_str_test(e);
+    arg_stru_test(f);
+    arg_func_test((int(*)(int,int))add);
+}
+
+void arg_arr_test(int *x){
+    int i;
+    for(i=0; i<10; i++)
+        printf("d[%d] = %d\t", i, x[i]);
+    printf("\n");
+}
+
+void arg_str_test(char *x){
+    printf("e=%s\n", x);
+}
+
+void arg_stru_test(struct sample *x){
+    int i;
+    for(i=0; i<3; i++)
+        printf("%d번째 : %s %d %f\n", i, x[i].a, x[i].b, x[i].c);
+}
+
+void arg_func_test(int (*x)(int,int)){
+    int a = 10, b = 10;
+    printf("add 함수결과 : %d\n", x(a,b));
+}
+
+int add(int x, int y){
+    return x+y;
+}
+```
+
+
+
+#### Malloc의 직접 구현
+
+- 임베디드 환경에서는 malloc을 지원하는 컴파일러가 없을 가능성이 크다. 따라서 보통의 경우는 링크드리스트를 통해 구현하는 경우가 대부분이다.
+
+
+
+#### 포인터를 빠르게 하는 방법 : 포인터 체인을 제거하라.
+
+- 구조체 포인터를 사용하다 보면 구조체 멤버의 멤버의 멤버에 접근하는 것처럼 포인터가 체인을 형성하는 일이 발생한다.
+
+```c
+//포인터 체인의 발생 내역
+struct Point {
+    int x, y, z;
+};
+
+struct Obj{
+    Point *p1, *d;
+};
+
+void draw(struct Obj *a){
+    a->p1->x = 0;
+    a->p1->y = 0;
+    a->p1->z = 0;
+} struct Point{
+    int x, y, z;
+};
+```
+
+```c
+//포인터 체인 제거
+struct Obj{
+    Point *p1, *d;
+};
+
+void draw(struct Obj *a){
+    struct Point *k = a->pl;
+    k -> x = 0;
+    k -> y = 0;
+    k -> z = 0;
+}
+```
+
+
+
+#### 포인터의 정리
+
+- 속도에서는 배열이, 메모리에서는 포인터가 효율적이다.
+- 함수에서 인자의 크기가 큰 경우, 값을 복사해서 넘기는 것보다 포인터를 활용하는 것이 효과적이다.
+- 힙 엑세스와 함수의 인자로 배열, 문자열, 함수를 전달할 때에는 포인터를 활용한다.
+- 포인터 체인은 제거한다.
+
+
+
+#### 변수들의 저장 위치
+
+- 초기화되는 전역 변수와 정적 변수 => 데이터 세그먼트
+- 초기화되지 않은 전역 변수와 정적 변수 => bss 세그먼트
+- 지역 변수와 함수 인자 => 스택
+- 레지스터 변수 => 레지스터
+- 문자열과 상수 => 텍스트 세그먼트
